@@ -1,0 +1,343 @@
+
+# Visualisation
+#/control/execute mac/visu.mac
+
+# Verbosity
+### inlined from mac/verbose.mac ###
+/gate/verbose Physic    0
+/gate/verbose Cuts      0
+/gate/verbose SD        0
+/gate/verbose Actions   0
+/gate/verbose Actor     0
+/gate/verbose Step      0
+/gate/verbose Error     0
+/gate/verbose Warning   0
+/gate/verbose Output    0
+/gate/verbose Beam      0
+/gate/verbose Volume    0
+/gate/verbose Image     0
+/gate/verbose Geometry  0
+/gate/verbose Core      0
+
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0	      
+### end mac/verbose.mac ###
+# Geometry
+### inlined from mac/world.mac ###
+
+# Material Database
+/gate/geometry/setMaterialDatabase data/GateMaterials.db
+
+# World
+/gate/world/geometry/setXLength 1.5 m
+/gate/world/geometry/setYLength 1.5 m
+/gate/world/geometry/setZLength 1.5 m
+/gate/world/vis/setColor white
+/gate/world/vis/forceWireframe
+/gate/world/setMaterial Air
+### end mac/world.mac ###
+### inlined from mac/pet_head.mac ###
+
+# DISCLAIMER: this is NOT a true PET device
+# It has been designed to check several features
+# It is not expected to give realistic results
+
+
+#	CYLINDRICAL
+/gate/world/daughters/name cylindricalPET
+/gate/world/daughters/insert cylinder
+/gate/cylindricalPET/placement/setTranslation 0.0 0.0 0.0 cm
+/gate/cylindricalPET/geometry/setRmax 52.0 cm
+/gate/cylindricalPET/geometry/setRmin 39.9 cm
+/gate/cylindricalPET/geometry/setHeight 40.2 cm
+/gate/cylindricalPET/setMaterial Air
+/gate/cylindricalPET/vis/forceWireframe
+/gate/cylindricalPET/vis/setColor white
+
+#	HEAD
+/gate/cylindricalPET/daughters/name head
+/gate/cylindricalPET/daughters/insert box
+/gate/head/placement/setTranslation 44.0 0.0 0.0 cm
+/gate/head/geometry/setXLength  8.0 cm
+/gate/head/geometry/setYLength 32.0 cm
+/gate/head/geometry/setZLength 40.2 cm
+/gate/head/setMaterial Air
+/gate/head/vis/setVisible 0
+
+#	END-SHIELDING
+/gate/head/daughters/name endshielding
+/gate/head/daughters/insert box
+/gate/endshielding/placement/setTranslation 0.0 0.0 0.0 cm
+/gate/endshielding/geometry/setXLength 8.0 cm
+/gate/endshielding/geometry/setYLength 32.0 cm
+/gate/endshielding/geometry/setZLength 1.0 mm
+/gate/endshielding/setMaterial Lead
+/gate/endshielding/repeaters/insert cubicArray
+/gate/endshielding/cubicArray/setRepeatNumberX 1
+/gate/endshielding/cubicArray/setRepeatNumberY 1
+/gate/endshielding/cubicArray/setRepeatNumberZ 2
+/gate/endshielding/cubicArray/setRepeatVector 0.0 0.0 40.1 cm
+/gate/endshielding/vis/setColor white
+
+#	SEPTA
+/gate/head/daughters/name septa
+/gate/head/daughters/insert box
+/gate/septa/placement/setTranslation -1.5 0.0 0.0 cm
+/gate/septa/geometry/setXLength 5.0 cm
+/gate/septa/geometry/setYLength 32.0 cm
+/gate/septa/geometry/setZLength .5 mm
+/gate/septa/setMaterial Tungsten
+/gate/septa/repeaters/insert cubicArray
+/gate/septa/cubicArray/setRepeatNumberX 1
+/gate/septa/cubicArray/setRepeatNumberY 1
+/gate/septa/cubicArray/setRepeatNumberZ 3
+/gate/septa/cubicArray/setRepeatVector 0.0 0.0 10.0 cm
+/gate/septa/vis/setColor blue
+
+#	MODULE
+/gate/head/daughters/name module
+/gate/head/daughters/insert box
+/gate/module/placement/setTranslation 2.5 0.0 0.0 cm
+/gate/module/geometry/setXLength 3.0 cm
+/gate/module/geometry/setYLength 8.0 cm
+/gate/module/geometry/setZLength 10.0 cm
+/gate/module/setMaterial Air
+/gate/module/vis/setVisible 0
+
+#	BLOCK
+/gate/module/daughters/name block
+/gate/module/daughters/insert box
+/gate/block/placement/setTranslation 0.0 0.0 0.0 cm
+/gate/block/geometry/setXLength 30 mm
+/gate/block/geometry/setYLength 15.9 mm
+/gate/block/geometry/setZLength 19.9 mm
+/gate/block/setMaterial Air
+/gate/block/vis/setVisible 0
+
+#	C R Y S T A L
+/gate/block/daughters/name crystal
+/gate/block/daughters/insert box
+/gate/crystal/placement/setTranslation 0.0 0.0 0.0 cm
+/gate/crystal/geometry/setXLength 3.0 cm
+/gate/crystal/geometry/setYLength 3.0 mm
+/gate/crystal/geometry/setZLength 3.8 mm
+/gate/crystal/setMaterial Air
+/gate/crystal/vis/setVisible 0
+
+
+#	LSO layer
+/gate/crystal/daughters/name LSO
+/gate/crystal/daughters/insert box
+/gate/LSO/placement/setTranslation -0.75 0.0 0.0 cm
+/gate/LSO/geometry/setXLength 1.5 cm
+/gate/LSO/geometry/setYLength 3.0 mm
+/gate/LSO/geometry/setZLength 3.8 mm
+/gate/LSO/setMaterial LSO
+/gate/LSO/vis/setColor green
+
+#	BGO layer
+/gate/crystal/daughters/name BGO
+/gate/crystal/daughters/insert box
+/gate/BGO/placement/setTranslation +0.75 0.0 0.0 cm
+/gate/BGO/geometry/setXLength 1.5 cm
+/gate/BGO/geometry/setYLength 3.0 mm
+/gate/BGO/geometry/setZLength 3.8 mm
+/gate/BGO/setMaterial BGO
+/gate/BGO/vis/setColor yellow
+
+#	R E P E A T    C R Y S T A L
+/gate/crystal/repeaters/insert cubicArray
+/gate/crystal/cubicArray/setRepeatNumberX 1
+/gate/crystal/cubicArray/setRepeatNumberY 5
+/gate/crystal/cubicArray/setRepeatNumberZ 5
+/gate/crystal/cubicArray/setRepeatVector 0.0 3.2 4.0 mm
+
+
+#	R E P E A T    BLOCK
+/gate/block/repeaters/insert cubicArray
+/gate/block/cubicArray/setRepeatNumberX 1
+/gate/block/cubicArray/setRepeatNumberY 5
+/gate/block/cubicArray/setRepeatNumberZ 5
+/gate/block/cubicArray/setRepeatVector 0.0 1.6 2.0 cm
+
+#	R E P E A T MODULE
+/gate/module/repeaters/insert cubicArray
+/gate/module/cubicArray/setRepeatNumberX 1
+/gate/module/cubicArray/setRepeatNumberY 4
+/gate/module/cubicArray/setRepeatNumberZ 4
+/gate/module/cubicArray/setRepeatVector 0.0 8.0 10.0 cm
+
+#	R E P E A T HEAD
+/gate/head/repeaters/insert ring
+/gate/head/ring/setRepeatNumber 8
+
+/gate/cylindricalPET/moves/insert orbiting
+/gate/cylindricalPET/orbiting/setSpeed .1875 deg/s
+/gate/cylindricalPET/orbiting/setPoint1 0 0 0 cm
+/gate/cylindricalPET/orbiting/setPoint2 0 0 1 cm
+
+
+#	A T T A C H    S Y S T E M 
+/gate/systems/cylindricalPET/rsector/attach head
+/gate/systems/cylindricalPET/module/attach module
+/gate/systems/cylindricalPET/submodule/attach block
+/gate/systems/cylindricalPET/crystal/attach crystal
+/gate/systems/cylindricalPET/layer0/attach LSO
+/gate/systems/cylindricalPET/layer1/attach BGO
+
+#	A T T A C H    C R Y S T A L  SD
+
+/gate/LSO/attachCrystalSD
+/gate/BGO/attachCrystalSD
+
+/gate/systems/cylindricalPET/describe
+### end mac/pet_head.mac ###
+### inlined from mac/pet_digitizer.mac ###
+
+# The singles
+/gate/digitizer/Singles/insert                        adder
+
+/gate/digitizer/Singles/insert                        readout
+/gate/digitizer/Singles/readout/setDepth              1
+
+/gate/digitizer/Singles/insert                        blurring
+/gate/digitizer/Singles/blurring/setResolution        0.26
+/gate/digitizer/Singles/blurring/setEnergyOfReference 511. keV
+
+/gate/digitizer/Singles/insert                        thresholder
+/gate/digitizer/Singles/thresholder/setThreshold      350. keV
+/gate/digitizer/Singles/insert                        upholder
+/gate/digitizer/Singles/upholder/setUphold            650. keV
+
+
+# Coincidence sorter
+/gate/digitizer/Coincidences/setWindow          120 ns
+/gate/digitizer/Coincidences/MultiplesPolicy    takeWinnerOfGoods
+
+/gate/digitizer/name                            delay
+/gate/digitizer/insert                          coincidenceSorter
+/gate/digitizer/delay/setWindow                 120 ns
+/gate/digitizer/delay/setOffset                 500 ns
+#/gate/digitizer/delay/MultiplesPolicy          takeWinnerOfGoods
+### end mac/pet_digitizer.mac ###
+### inlined from mac/cylindrical_phantom.mac ###
+
+# Define a cylindrical box 
+/gate/world/daughters/name         phantom
+/gate/world/daughters/insert       cylinder
+/gate/phantom/geometry/setRmin     0.0 cm
+/gate/phantom/geometry/setRmax     10.0 cm
+/gate/phantom/geometry/setHeight   70. cm
+/gate/phantom/setMaterial          Water
+/gate/phantom/vis/setColor         blue
+
+# Define the sensitive detector
+/gate/phantom/attachPhantomSD
+/gate/endshielding/attachPhantomSD
+/gate/septa/attachPhantomSD
+### end mac/cylindrical_phantom.mac ###
+# Physics
+/gate/physics/addPhysicsList emstandard_opt3
+### inlined from mac/physics.mac ###
+
+
+#/gate/physics/addPhysicsList %PHYSICS_LIST%
+
+
+# High cut by default
+/gate/physics/Gamma/SetCutInRegion      world 1 km
+/gate/physics/Electron/SetCutInRegion   world 1 km
+/gate/physics/Positron/SetCutInRegion   world 1 km
+
+# Cuts for particle in NEMACylinder
+/gate/physics/Gamma/SetCutInRegion      phantom 1.0 mm
+/gate/physics/Electron/SetCutInRegion   phantom 1.0 mm
+/gate/physics/Positron/SetCutInRegion   phantom 1.0 mm
+
+# Cuts for particle in LSO
+/gate/physics/Gamma/SetCutInRegion      LSO 1.0 mm
+/gate/physics/Electron/SetCutInRegion   LSO 1.0 mm
+/gate/physics/Positron/SetCutInRegion   LSO 1.0 mm
+
+# Cuts for particle in BGO
+/gate/physics/Gamma/SetCutInRegion      BGO 1.0 mm
+/gate/physics/Electron/SetCutInRegion   BGO 1.0 mm
+/gate/physics/Positron/SetCutInRegion   BGO 1.0 mm
+### end mac/physics.mac ###
+# Output
+### inlined from mac/output.mac ###
+
+/gate/actor/addActor               SimulationStatisticActor stat
+/gate/actor/stat/save              output/stat.txt
+#/gate/actor/stat/saveEveryNSeconds 60
+
+
+# Define a root listmode file output
+
+/gate/output/root/enable
+/gate/output/root/setFileName             output/pet
+
+/gate/output/root/setRootHitFlag          0
+/gate/output/root/setRootSinglesFlag      1
+/gate/output/root/setRootCoincidencesFlag 1
+/gate/output/root/setRootdelayFlag        1
+/gate/output/root/setRootNtupleFlag       0
+### end mac/output.mac ###
+# Initialisation
+/gate/run/initialize
+
+# Source
+### inlined from mac/sources.mac ###
+#################
+#               #
+#  S O U R C E  #
+#               #
+#################
+
+/gate/source/addSource F18LineSource
+/gate/source/F18LineSource/setActivity 100000. becquerel
+
+/gate/source/F18LineSource/gps/particle e+
+/gate/source/F18LineSource/setForcedUnstableFlag true
+/gate/source/F18LineSource/setForcedHalfLife 6586.2 s
+/gate/source/F18LineSource/gps/energytype Fluor18
+/gate/source/F18LineSource/gps/type Volume
+/gate/source/F18LineSource/gps/shape Cylinder
+/gate/source/F18LineSource/gps/radius .5 mm
+/gate/source/F18LineSource/gps/halfz 34.0 cm
+/gate/source/F18LineSource/gps/angtype iso
+/gate/source/F18LineSource/gps/centre 0. -2.0 0. cm
+
+/gate/source/addSource O15LineSource
+/gate/source/O15LineSource/setActivity 100000. becquerel
+/gate/source/O15LineSource/gps/particle e+
+/gate/source/O15LineSource/setForcedUnstableFlag true
+/gate/source/O15LineSource/setForcedHalfLife 122.24 s
+/gate/source/O15LineSource/gps/energytype Oxygen15
+/gate/source/O15LineSource/gps/type Volume
+/gate/source/O15LineSource/gps/shape Cylinder
+/gate/source/O15LineSource/gps/radius .5 mm
+/gate/source/O15LineSource/gps/halfz 34.0 cm
+/gate/source/O15LineSource/gps/angtype iso
+/gate/source/O15LineSource/gps/centre 0. 2.0 0. cm
+
+/gate/source/list
+### end mac/sources.mac ###
+# Random
+/gate/random/setEngineName MersenneTwister
+/gate/random/setEngineSeed auto
+
+# verbose
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+
+# Start acquisition
+/gate/application/setTimeStart 0 s
+/gate/application/setTimeSlice 120 s
+/gate/application/setTimeStop  240 s
+/gate/application/startDAQ
+
+# computation time around 2 min for 10 sec
+# computation time around 1.3h for 240 sec
