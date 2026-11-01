@@ -27,9 +27,9 @@ From: ghcr.io/g4med-test/geant4-alma9:{{ TAG }}
     set -eu
     dnf install -y --setopt=install_weak_deps=False epel-release dnf-plugins-core
     dnf config-manager --set-enabled crb
-    dnf install -y --setopt=install_weak_deps=False \
-        root-core root-io root-tree root-hist root-graf root-gpad root-physics \
-        libxml2-devel
+    # root-core pulls in every library of ROOT's default ROOT_LIBRARIES, which
+    # GATE links against.
+    dnf install -y --setopt=install_weak_deps=False root-core libxml2-devel
     dnf clean all
     rm -rf /var/cache/dnf
 
