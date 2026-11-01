@@ -45,6 +45,17 @@ From: ghcr.io/g4med-test/geant4-alma9:{{ TAG }}
         'https://codeload.github.com/OpenGATE/Gate/tar.gz/refs/tags/{{ GATE_TAG }}' \
         -o /tmp/gate/source.tar.gz
     tar -xzf /tmp/gate/source.tar.gz -C /tmp/gate/src --strip-components=1
+
+    # GATE bug (v9.4.2): GateToRoot::RecordEndOfRun clears m_treesHit, then
+    # RecordEndOfAcquisition reads m_treesHit[0] to find the ROOT file to write.
+    # That out-of-range access aborts the run at the end of the acquisition here
+    # (libstdc++ assertions are enabled), so the file is taken at the end of each
+    # run, before the clear. Lines already fixed upstream are left untouched.
+    sed -i \
+        -e 's|^\(\s*\)m_treesHit.clear();|\1if (!m_treesHit.empty()) m_hfile = m_treesHit[0]->GetCurrentFile();\n\1m_treesHit.clear();|' \
+        -e 's|^\(\s*\)m_hfile = m_treesHit\[0\]->GetCurrentFile();|\1if (!m_treesHit.empty()) m_hfile = m_treesHit[0]->GetCurrentFile();|' \
+        /tmp/gate/src/source/digits_hits/src/GateToRoot.cc
+
     cmake -S /tmp/gate/src -B /tmp/gate/build \
         -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/gate \
         -DCMAKE_PREFIX_PATH=/opt/geant4 \
