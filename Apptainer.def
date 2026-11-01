@@ -10,8 +10,12 @@ From: ghcr.io/g4med-test/geant4-alma9:{{ TAG }}
 # Python opengate 10) from the GATE_TAG release against the Geant4 of the base
 # image. GATE writes its listmode output with ROOT, taken from EPEL (ROOT 6.40,
 # built with -std=c++17 like Geant4 11).
+#
+# Each GATE release targets one Geant4 minor version: v9.4.2 needs Geant4 11.4
+# (it does not compile with 11.3, e.g. G4QuasiOpticalPhoton), v9.4/v9.4.1 are
+# for 11.2. Hence the 11.4 default TAG; change GATE_TAG together with TAG.
 %arguments
-    TAG=v11.3.2
+    TAG=v11.4.3
     PROJECT_NAME=G4TestGeneric
     GATE_TAG=v9.4.2
 

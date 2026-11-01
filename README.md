@@ -33,6 +33,12 @@ build argument (default `v9.4.2`):
 apptainer build --build-arg GATE_TAG=v9.4.2 pet_imaging.sif Apptainer.def
 ```
 
+Each GATE release targets one Geant4 minor version: v9.4.2 requires Geant4
+**11.4** (it does not compile with 11.3), v9.4/v9.4.1 are for 11.2, and there
+is none for 11.3. That is why this test's default `TAG` (the base image's
+Geant4) is `v11.4.3`, unlike the `v11.3.2` of the other tests: change
+`GATE_TAG` and `TAG` together.
+
 The runscript runs `Gate` on the given macro after creating `output/` and
 `data/GateMaterials.db` in the working directory, where the macro expects
 them. `macro/unit.mac` (used by the CI unit test) is `macro/main.mac` with
