@@ -58,10 +58,12 @@ From: ghcr.io/g4med-test/geant4-alma9:{{ TAG }}
 
 # GATE resolves the macro's data/GateMaterials.db and output/ against the working
 # directory (an empty /outputs in the validation run), so both are prepared there.
+# Output is line-buffered so that the last messages before an abort (a fatal
+# G4Exception) still reach the log instead of being lost in the stdio buffer.
 %runscript
     mkdir -p output data
     [ -e data/GateMaterials.db ] || ln -s /opt/gate/share/GateMaterials.db data/GateMaterials.db
-    exec /opt/gate/bin/Gate "$@"
+    exec stdbuf -oL -eL /opt/gate/bin/Gate "$@"
 
 %test
     set -eu
