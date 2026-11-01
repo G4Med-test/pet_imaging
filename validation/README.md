@@ -36,6 +36,6 @@ not a rewrite.
 otherwise ignores), in addition to `uproot`/`numpy`. The geant4-alma9
 container this organization's other tests run in is documented (in the
 top-level `geant-val/INTEGRAZIONE_VALIDAZIONE.md`) as shipping only
-"Python 3.12, NumPy and uproot" — `matplotlib`/`scipy` aren't mentioned, so
-they may need to be added to whatever environment actually runs this
-parser's `subprocess.run()` call.
+"Python 3.12, NumPy and uproot", so this test's `Apptainer.def` installs
+`matplotlib` and `scipy` into the image's `/opt/venv`, the Python that runs
+this parser and its `subprocess.run()` call.

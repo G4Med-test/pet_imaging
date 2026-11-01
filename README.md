@@ -20,8 +20,29 @@ resulting `pet.root` to analyse the reconstructed in-vivo activity.
 This test is **GATE-macro-driven**: there is no C++ `DetectorConstruction`/
 `PhysicsList`/etc. to import, and no `main.cc` to compile. `src/` and
 `include/` are left as the empty template placeholders; the actual test
-content lives entirely under `macro/` and `validation/`. Running it requires
-a GATE installation (built on top of Geant4), not just `cmake --build`.
+content lives entirely under `macro/` and `validation/`.
+
+Instead of building a Geant4 main, `Apptainer.def` downloads and compiles
+**GATE** ([OpenGATE/Gate](https://github.com/OpenGATE/Gate), the C++
+macro-driven GATE 9 — not the Python `opengate` 10, which does not read
+`.mac` macros) against the Geant4 of the base image, together with ROOT
+from EPEL for GATE's listmode output. The GATE release is the `GATE_TAG`
+build argument (default `v9.4.2`):
+
+```bash
+apptainer build --build-arg GATE_TAG=v9.4.2 pet_imaging.sif Apptainer.def
+```
+
+Each GATE release targets one Geant4 minor version: v9.4.2 requires Geant4
+**11.4** (it does not compile with 11.3), v9.4/v9.4.1 are for 11.2, and there
+is none for 11.3. That is why this test's default `TAG` (the base image's
+Geant4) is `v11.4.3`, unlike the `v11.3.2` of the other tests: change
+`GATE_TAG` and `TAG` together.
+
+The runscript runs `Gate` on the given macro after creating `output/` and
+`data/GateMaterials.db` in the working directory, where the macro expects
+them. `macro/unit.mac` (used by the CI unit test) is `macro/main.mac` with
+a 2 s acquisition instead of 240 s.
 
 ## 📚 Reference
 

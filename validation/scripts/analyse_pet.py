@@ -61,7 +61,9 @@ def analyse_pet(filename):
     except:
         print('nope')
 
-    singles = f[b'Singles']
+    # GATE >= 9.3 names the singles tree after the sensitive detector: with LSO
+    # and BGO, Singles_BGO holds the merged chain (see macro/mac/pet_digitizer.mac).
+    singles = f['Singles_BGO'] if 'Singles_BGO' in f else f[b'Singles']
     print('nb of singles ', len(singles))
 
     coinc = f[b'Coincidences']
