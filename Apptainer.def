@@ -3,24 +3,63 @@ From: ghcr.io/g4med-test/geant4-alma9:{{ TAG }}
 
 # The base image provides Geant4 (/opt/geant4), compilers, CMake and Python with
 # NumPy/uproot (/opt/venv), and already sets PATH, LD_LIBRARY_PATH and the
-# dataset variables (/g4data): no %environment section is needed here.
+# dataset variables (/g4data).
+#
+# This test is driven by GATE macros, so instead of compiling a Geant4 main
+# the image builds GATE (the C++, macro-driven GATE 9: OpenGATE/Gate, not the
+# Python opengate 10) from the GATE_TAG release against the Geant4 of the base
+# image. GATE writes its listmode output with ROOT, taken from EPEL (ROOT 6.40,
+# built with -std=c++17 like Geant4 11).
 %arguments
     TAG=v11.3.2
     PROJECT_NAME=G4TestGeneric
+    GATE_TAG=v9.4.2
 
 %labels
     Project {{ PROJECT_NAME }}
     Description "Apptainer container for {{ PROJECT_NAME }}"
+    GateVersion {{ GATE_TAG }}
 
 %files
-    . /source
+    validation/scripts/GateMaterials.db /opt/gate/share/GateMaterials.db
 
 %post
     set -eu
-    cmake -S /source -B /tmp/build -DCMAKE_PREFIX_PATH=/opt/geant4 -DPROJECT_NAME_OVERRIDE="{{ PROJECT_NAME }}"
-    cmake --build /tmp/build --parallel "$(nproc)"
-    cmake --install /tmp/build
-    rm -rf /tmp/build
+    dnf install -y --setopt=install_weak_deps=False epel-release dnf-plugins-core
+    dnf config-manager --set-enabled crb
+    dnf install -y --setopt=install_weak_deps=False \
+        root-core root-io root-tree root-hist root-graf root-gpad root-physics \
+        libxml2-devel
+    dnf clean all
+    rm -rf /var/cache/dnf
 
+    # analyse_pet.py (run by validation/parser.py) also needs these.
+    /opt/venv/bin/python -m pip install --no-cache-dir --only-binary=:all: matplotlib scipy
+
+    mkdir -p /tmp/gate/src
+    curl -fLsS --retry 5 \
+        'https://codeload.github.com/OpenGATE/Gate/tar.gz/refs/tags/{{ GATE_TAG }}' \
+        -o /tmp/gate/source.tar.gz
+    tar -xzf /tmp/gate/source.tar.gz -C /tmp/gate/src --strip-components=1
+    cmake -S /tmp/gate/src -B /tmp/gate/build \
+        -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/gate \
+        -DCMAKE_PREFIX_PATH=/opt/geant4 \
+        -DGATE_USE_GEANT4_UIVIS=OFF
+    cmake --build /tmp/gate/build --parallel "$(nproc)"
+    cmake --install /tmp/gate/build
+    rm -rf /tmp/gate
+
+%environment
+    export PATH=/opt/gate/bin:$PATH
+
+# GATE resolves the macro's data/GateMaterials.db and output/ against the working
+# directory (an empty /outputs in the validation run), so both are prepared there.
 %runscript
-    exec /usr/local/bin/{{ PROJECT_NAME }} "$@"
+    mkdir -p output data
+    [ -e data/GateMaterials.db ] || ln -s /opt/gate/share/GateMaterials.db data/GateMaterials.db
+    exec /opt/gate/bin/Gate "$@"
+
+%test
+    set -eu
+    test -x /opt/gate/bin/Gate
+    /opt/venv/bin/python -c 'import matplotlib, scipy, uproot'
