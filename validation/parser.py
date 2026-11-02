@@ -57,7 +57,7 @@ def extract_observable(filename):
 def parse(job):
     output_dir = os.path.join(job["path"], "output")
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    subprocess.run([sys.executable, os.path.join(script_dir, "analyse_pet.py"), "pet.root"],
+    subprocess.run([sys.executable, os.path.join(script_dir, "scripts", "analyse_pet.py"), "pet.root"],
                    cwd=output_dir, check=True)
 
     for filename in sorted(os.listdir(output_dir)):
