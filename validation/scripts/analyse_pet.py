@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 
@@ -17,12 +17,12 @@ import uproot
 # --------------------------------------------------------------------------
 # it is faster to access to root array like this dont know exactly why
 def tget(t, array_name):
-    return t.arrays([array_name])[array_name]
+    return t[array_name].array(library='np')
 
 
 # --------------------------------------------------------------------------
 def get_stat_value(s, v):
-    g = r'' + v + '\w+'
+    g = re.escape(v) + r'\w+'
     a = re.search(g, s)
     if a == None:
         return -1
@@ -63,25 +63,29 @@ def analyse_pet(filename):
 
     # GATE >= 9.3 names the singles tree after the sensitive detector: with LSO
     # and BGO, Singles_BGO holds the merged chain (see macro/mac/pet_digitizer.mac).
-    singles = f['Singles_BGO'] if 'Singles_BGO' in f else f[b'Singles']
-    print('nb of singles ', len(singles))
+    # uproot >= 4: len() of a tree is its number of branches, num_entries its entries.
+    singles = f['Singles_BGO'] if 'Singles_BGO' in f else f['Singles']
+    n_singles = singles.num_entries
+    print('nb of singles ', n_singles)
 
-    coinc = f[b'Coincidences']
-    print('nb of coincidences', len(coinc))
+    coinc = f['Coincidences']
+    n_coinc = coinc.num_entries
+    print('nb of coincidences', n_coinc)
 
-    delays = f[b'delay']
-    print('nb of delays', len(delays))
+    delays = f['delay']
+    n_delays = delays.num_entries
+    print('nb of delays', n_delays)
 
     # plot
     fig, ax = plt.subplots(3, 3, figsize=(15, 10))
 
     #
     print("Detector positions by run")
-    runID = tget(coinc, b'runID')
-    gpx1 = tget(coinc, b'globalPosX1')
-    gpx2 = tget(coinc, b'globalPosX2')
-    gpy1 = tget(coinc, b'globalPosY1')
-    gpy2 = tget(coinc, b'globalPosY2')
+    runID = tget(coinc, 'runID')
+    gpx1 = tget(coinc, 'globalPosX1')
+    gpx2 = tget(coinc, 'globalPosX2')
+    gpy1 = tget(coinc, 'globalPosY1')
+    gpy2 = tget(coinc, 'globalPosY2')
     mask = (runID == 0)
     n = 1000  # restrict to the n first values
     r0_gpx1 = gpx1[mask][:n]
@@ -122,8 +126,8 @@ def analyse_pet(filename):
 
     # Axial Detection
     print('Axial Detection')
-    ad1 = tget(coinc, b'globalPosZ1')
-    ad2 = tget(coinc, b'globalPosZ2')
+    ad1 = tget(coinc, 'globalPosZ1')
+    ad2 = tget(coinc, 'globalPosZ2')
     ad = np.concatenate((ad1, ad2))
     a = ax[(0, 1)]
     a.hist(ad, histtype='step', bins=100)
@@ -143,10 +147,10 @@ def analyse_pet(filename):
     # True scattered coincindences (tsc)
     print('True scattered and unscattered coincindences')
     z = (ad1 + ad2) / 2
-    compt1 = tget(coinc, b'comptonPhantom1')
-    compt2 = tget(coinc, b'comptonPhantom2')
-    rayl1 = tget(coinc, b'RayleighPhantom1')
-    rayl2 = tget(coinc, b'RayleighPhantom2')
+    compt1 = tget(coinc, 'comptonPhantom1')
+    compt2 = tget(coinc, 'comptonPhantom2')
+    rayl1 = tget(coinc, 'RayleighPhantom1')
+    rayl2 = tget(coinc, 'RayleighPhantom2')
     mask = ((compt1 == 0) & (compt2 == 0) & (rayl1 == 0) & (rayl2 == 0))
     tuc = z[mask]
     tsc = z[~mask]
@@ -184,9 +188,9 @@ def analyse_pet(filename):
 
     # Delays and Randoms
     print("Delays and Randoms")
-    time = tget(coinc, b'time1')
-    sourceID1 = tget(coinc, b'sourceID1')
-    sourceID2 = tget(coinc, b'sourceID2')
+    time = tget(coinc, 'time1')
+    sourceID1 = tget(coinc, 'sourceID1')
+    sourceID2 = tget(coinc, 'sourceID2')
     mask = (sourceID1 == 0) & (sourceID2 == 0)
     decayF18 = time[mask]
     mask = (sourceID1 == 1) & (sourceID2 == 1)
@@ -247,13 +251,13 @@ def analyse_pet(filename):
     a.set_title('Rad decays')
 
     # Randoms
-    eventID1 = tget(coinc, b'eventID1')
-    eventID2 = tget(coinc, b'eventID2')
+    eventID1 = tget(coinc, 'eventID1')
+    eventID2 = tget(coinc, 'eventID2')
     randoms = time[eventID1 != eventID2]
-    print(len(delays))
-    t1 = tget(delays, b'time1')
+    print(n_delays)
+    t1 = tget(delays, 'time1')
     print('nb of randoms', len(randoms))
-    print('nb of delays', len(delays))
+    print('nb of delays', n_delays)
 
     num, bins = np.histogram(randoms, bins=100)
     bin_low = bins[:-1]
@@ -271,7 +275,7 @@ def analyse_pet(filename):
     bin_high = bins[1:]
 
     with open("r12b.dat", "w") as f:
-        print("# Title: randoms, delays with coinc sorter = {}".format(len(delays)), file=f)
+        print("# Title: randoms, delays with coinc sorter = {}".format(n_delays), file=f)
         print("# X axis: time", file=f)
         print("# Y axis: N", file=f)
         for i in range(len(num)):
@@ -279,15 +283,15 @@ def analyse_pet(filename):
 
     a = ax[1, 2]
     a.hist(randoms, bins=100, histtype='stepfilled', alpha=0.6, label='Random = {}'.format(len(randoms)))
-    a.hist(t1, bins=100, histtype='step', label="Delays with coinc sorter = {}".format(len(delays)))
+    a.hist(t1, bins=100, histtype='step', label="Delays with coinc sorter = {}".format(n_delays))
     a.legend()
     a.set_title('Randoms')
 
     ntrue = len(tuc)
     absolute_sensitivity = ntrue / n_events
     line1 = 'Number of events {:.0f}'.format(n_events)
-    line1 = line1 + '\nNumber of singles {:.0f}'.format(len(singles))
-    line1 = line1 + '\nNumber of coincidences {:.0f}'.format(len(coinc))
+    line1 = line1 + '\nNumber of singles {:.0f}'.format(n_singles)
+    line1 = line1 + '\nNumber of coincidences {:.0f}'.format(n_coinc)
     line1 = line1 + '\nNumber of true {:.0f}'.format(len(tuc))
     line1 = line1 + '\nNumber of randoms {:.0f}'.format(len(randoms))
     line1 = line1 + '\nNumber of scatter {:.0f}'.format(len(tsc))
