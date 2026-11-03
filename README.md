@@ -39,6 +39,13 @@ is none for 11.3. That is why this test's default `TAG` (the base image's
 Geant4) is `v11.4.3`, unlike the `v11.3.2` of the other tests: change
 `GATE_TAG` and `TAG` together.
 
+`validation/config.json` says so too (`"geant4": {"min": "11.4", "max": "11.4", ...}`):
+a validation of another Geant4 version leaves this test out as *not applicable*
+instead of failing its build, and a pipeline started with such a `geant4_tag` stops
+before building (see
+[Supported Geant4 versions](https://github.com/G4Med-test/ci-workflows#supported-geant4-versions)).
+Update the range with `GATE_TAG`.
+
 The runscript runs `Gate` on the given macro after creating `output/` and
 `data/GateMaterials.db` in the working directory, where the macro expects
 them. `macro/unit.mac` (used by the CI unit test) is `macro/main.mac` with
